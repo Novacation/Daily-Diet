@@ -10,12 +10,13 @@ export interface IFood {
   ): Promise<ServiceResponse<Food>>
 
   updateFood(
-    id: number,
+    userId: number,
+    foodByPk: Food,
     name: string,
     description: string,
     isHealthy: boolean,
     date: Date
   ): Promise<ServiceResponse<Food>>
 
-  deleteFood(id: number): Promise<ServiceResponse<Food>>
+  deleteFood(userId: number, foodByPk: Food): Promise<ServiceResponse<Food>>
 }

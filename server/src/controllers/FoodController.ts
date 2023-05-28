@@ -1,5 +1,7 @@
 import { Request, Response, Router } from 'express'
 import { FoodService } from '../services/FoodService'
+import { UserCheck } from '../middlewares/UserCheck'
+import { FoodCheck } from '../middlewares/FoodCheck'
 
 export class FoodController {
   private _router: Router = Router()
@@ -23,30 +25,44 @@ export class FoodController {
       res.status(Success ? 200 : 404).json(ResponseObject)
     })
 
-    this._router.patch('/update/:id', async (req: Request, res: Response) => {
-      const { id } = req.params
-      const { name, description, isHealthy, date } = req.body
+    this._router.patch(
+      '/update',
+      UserCheck,
+      FoodCheck,
+      async (req: Request, res: Response) => {
+        const { userId, name, description, isHealthy, date } = req.body
 
-      const { Success, ResponseObject } = await this._foodService.updateFood(
-        parseInt(id),
-        name,
-        description,
-        isHealthy,
-        date
-      )
+        const { foodByPk } = res.locals
 
-      res.status(Success ? 200 : 404).json(ResponseObject)
-    })
+        const { Success, ResponseObject } = await this._foodService.updateFood(
+          parseInt(userId),
+          foodByPk,
+          name,
+          description,
+          isHealthy,
+          date
+        )
 
-    this._router.delete('/delete/:id', async (req: Request, res: Response) => {
-      const { id } = req.params
+        res.status(Success ? 200 : 404).json(ResponseObject)
+      }
+    )
 
-      const { Success, ResponseObject } = await this._foodService.deleteFood(
-        parseInt(id)
-      )
+    this._router.delete(
+      '/delete',
+      UserCheck,
+      FoodCheck,
+      async (req: Request, res: Response) => {
+        const { userId } = req.body
+        const { foodByPk } = res.locals
 
-      res.status(Success ? 200 : 404).json(ResponseObject)
-    })
+        const { Success, ResponseObject } = await this._foodService.deleteFood(
+          parseInt(userId),
+          foodByPk
+        )
+
+        res.status(Success ? 200 : 404).json(ResponseObject)
+      }
+    )
   }
 
   public getRouter() {

@@ -2,6 +2,7 @@ import { IFood } from '../interfaces/IFood'
 import { ServiceResponse } from '../model/ServiceResponse'
 import { Food } from '../database/dbmodels/Food'
 import { User } from '../database/dbmodels/User'
+import { IsFoodOwner } from '../helper/IsFoodOwner'
 
 export class FoodService implements IFood {
   public async createFood(
@@ -34,7 +35,8 @@ export class FoodService implements IFood {
   }
 
   public async updateFood(
-    id: number,
+    userId: number,
+    foodByPk: Food,
     name: string,
     description: string,
     isHealthy: boolean,
@@ -43,42 +45,48 @@ export class FoodService implements IFood {
     const serviceResponse = new ServiceResponse<Food>()
 
     try {
-      const hasFood = await Food.findByPk(id)
-      if (!hasFood) throw new Error()
+      const result = await IsFoodOwner(userId, foodByPk.getDataValue('id'))
 
-      hasFood.setDataValue('name', name ?? hasFood.getDataValue('name'))
-      hasFood.setDataValue(
+      if (!result) throw new Error()
+
+      foodByPk.setDataValue('name', name ?? foodByPk.getDataValue('name'))
+
+      foodByPk.setDataValue(
         'description',
-        description ?? hasFood.getDataValue('description')
+        description ?? foodByPk.getDataValue('description')
       )
-      hasFood.setDataValue(
+
+      foodByPk.setDataValue(
         'isHealthy',
-        isHealthy ?? hasFood.getDataValue('isHealthy')
+        isHealthy ?? foodByPk.getDataValue('isHealthy')
       )
 
       if (typeof date === typeof Date) {
-        hasFood.setDataValue('date', date ?? hasFood.getDataValue('date'))
+        foodByPk.setDataValue('date', date ?? foodByPk.getDataValue('date'))
       }
 
-      await hasFood.save()
+      await foodByPk.save()
 
-      serviceResponse.Data = hasFood
+      serviceResponse.Data = foodByPk
     } catch (e) {
       console.error(e)
       serviceResponse.Success = false
-      serviceResponse.Message = 'Falha ao atualizar refeição'
+      serviceResponse.Message = `Falha ao atualizar: refeição não registrada pelo usuário: ${userId}`
     }
 
     return serviceResponse
   }
 
-  public async deleteFood(id: number): Promise<ServiceResponse<Food>> {
+  public async deleteFood(
+    userId: number,
+    foodByPk: Food
+  ): Promise<ServiceResponse<Food>> {
     const serviceResponse = new ServiceResponse<Food>()
 
     try {
-      const foodByPk = await Food.findByPk(id)
+      const result = await IsFoodOwner(userId, foodByPk.getDataValue('id'))
 
-      if (!foodByPk) throw new Error()
+      if (!result) throw new Error()
 
       serviceResponse.Data = foodByPk
 
@@ -86,7 +94,8 @@ export class FoodService implements IFood {
     } catch (e) {
       console.error(e)
       serviceResponse.Success = false
-      serviceResponse.Message = 'Falha ao deletar refeição'
+      serviceResponse.Message =
+        'Falha ao deletar: refeição não registrada pelo usuário'
     }
 
     return serviceResponse
