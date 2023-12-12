@@ -6,7 +6,9 @@
   "scripts": {
     "ts_dev": "cd src && npx tsc --watch",
     "server": "npx nodemon dist/index.js",
-    "dev": "concurrently  \"npm run ts_dev\" \"npm run server\""
+    "dev": "concurrently  \"npm run ts_dev\" \"npm run server\"",
+    "client": "npm run clientdev --prefix ../client ",
+    "fullstack": "concurrently \"npm run dev\" \"npm run client\""
   },
   "keywords": [],
   "author": "",

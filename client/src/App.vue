@@ -1,5 +1,15 @@
-<script setup lang="ts"></script>
+<script setup lang="ts">
+import { RouterView } from 'vue-router'
+</script>
 
-<template></template>
+<template>
+  <div class="w-full h-full">
+    <RouterView v-slot="{ Component }">
+      <component :is="Component" />
+    </RouterView>
+  </div>
+</template>
 
-<style scoped></style>
+<style scoped>
+@import 'assets/reset.css';
+</style>
